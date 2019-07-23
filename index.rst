@@ -48,7 +48,45 @@
 
    **This technote is not yet published.**
 
-   Recently, in DMTN-085, the QA Strategy Working Group (QAWG) made specific recommendations to improve the SQuaSH metrics dashboard. This technote presents a technical overview of the current implementation, and a plan to implement what is missing.
+   Recently, in DMTN-085, the QA Strategy Working Group (QAWG) made specific recommendations to improve the SQuaSH metrics dashboard. This technote presents an overview of the current implementation and a plan to implement what is missing.
+
+Introduction
+============
+
+.. qawg-rec::
+
+Summary of the QAWG recommendations to SQuaSH
+=============================================
+
+.. _qawg-rec-34:
+
+QAWG-REC-34
+    | SQuaSH should issue alerts to developers and key stakeholders on regressions in important metric values.
+
+.. _qawg-rec-35:
+
+QAWG-REC-35
+    | Provide a single, reliable source of documentation describing the SQuaSH system and a vision for its use in DM-wide metric tracking
+
+.. _qawg-rec-36:
+
+QAWG-REC-36
+    | The SQuaSH system should be closely coupled to the drill-down environment; in particular, the former should use the latter to enable drill-down functionality into particular metric values.
+
+.. _qawg-rec-37:
+
+QAWG-REC-37
+    | It must be possible to submit metrics to SQuaSH from arbitrary pipeline execution environment.
+
+.. _qawg-rec-38:
+
+QAWG-REC-38
+    | SQuaSH should be able to store and display appropriate metric values per DataId.
+
+
+These recommendations help to define the scope and technical requirements for SQuaSH. In particular, |37| and  |38| have implications on how metric values are stored and visualized, including metadata from the verification jobs and the execution environment. |34| requires an automated regression detection and a notification system.  |36| suggests a new mechanism to expose metrics stored in SQuaSH to the notebook aspect of the LSST Science Platform (LSP) for exploratory analysis. Finally, |35| requires better user documentation.
+
+Another general recommendation made by the QAWG is that the drill-down capability should be removed from SQuaSH and implemented in external dashboards or the notebook aspect of the LSP.
 
 
 
@@ -57,6 +95,16 @@
 .. Do not include the document title (it's automatically added from metadata.yaml).
 
 .. .. rubric:: References
+
+
+.. |34| replace:: :ref:`QAWG-REC-34 <qawg-rec-34>`
+.. |35| replace:: :ref:`QAWG-REC-35 <qawg-rec-35>`
+.. |36| replace:: :ref:`QAWG-REC-36 <qawg-rec-36>`
+.. |37| replace:: :ref:`QAWG-REC-37 <qawg-rec-37>`
+.. |38| replace:: :ref:`QAWG-REC-38 <qawg-rec-38>`
+.. _SQR-009: https://sqr-009.lsst.io
+
+
 
 .. Make in-text citations with: :cite:`bibkey`.
 
