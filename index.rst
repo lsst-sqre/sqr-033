@@ -147,6 +147,25 @@ From the recommendation that we should not implement drill-down capabilities in 
 .. todo:: Create ticket to drop the support for data blobs in SQuaSH.
 
 
+Chrognograf, a replacement for the SQuaSH frontend
+--------------------------------------------------
+
+Chronograf_ is the interface for the InfluxData_ stack. The `Explore tool`, in particular, has proven to be intuitive and straightforward to query AP and DRP metrics. These queries can be saved and organized in dashboards (e.g., DM-16942_). Chronograf also provides an intuitive interface to Kapacitor_ for creating alerting rules and notifications.
+
+Customizations in the Chronograf interface for SQuaSH include the support to markdown content in table cells (DM-18343_) and thus the ability to display `code changes` in the new interface (DM-18525_) as in the Bokeh_-based SQuaSH implementation.
+
+.. todo:: Redirect http://squash.lsst.codes to the Chronograf interface for SQuaSH.
+
+.. todo:: Deploy a separate InfluxDB instance for each SQuaSH instance (dev, test, prod).
+
+For the moment, Chronograf did not present any significant limitations for displaying metrics.
+
+.. todo:: Display of specification thresholds in Chronograf.
+
+However, we might consider alternatives like Grafana_ for creating dashboards, which is straightforward to implement because Grafana includes a data source for InfluxDB.
+
+
+
 .. Add content here.
 .. Do not include the document title (it's automatically added from metadata.yaml).
 
@@ -166,12 +185,16 @@ References
 .. _Kapacitor: https://www.influxdata.com/time-series-platform/kapacitor/
 .. _MySQL database: https://sqr-009.lsst.io/#the-squash-context-database/
 .. _SQL-like query language: https://docs.influxdata.com/influxdb/v1.7/query_language/
+.. _Bokeh: https://bokeh.pydata.org/en/latest/
 
 .. _DM-16223: https://jira.lsstcorp.org/browse/DM-16223/
 .. _DM-17767: https://jira.lsstcorp.org/browse/DM-17767/
 .. _DM-16775: https://jira.lsstcorp.org/browse/DM-16775/
 .. _DM-19605: https://jira.lsstcorp.org/browse/DM-19605/
 .. _DM-18060: https://jira.lsstcorp.org/browse/DM-18060/
+.. _DM-16942: https://jira.lsstcorp.org/browse/DM-16942/
+.. _DM-18343: https://jira.lsstcorp.org/browse/DM-18343/
+.. _DM-18525: https://jira.lsstcorp.org/browse/DM-18525/
 
 .. |34| replace:: :ref:`QAWG-REC-34 <qawg-rec-34>`
 .. |35| replace:: :ref:`QAWG-REC-35 <qawg-rec-35>`
