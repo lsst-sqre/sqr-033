@@ -61,8 +61,6 @@ Summary of the QAWG recommendations to SQuaSH
 Recently, in :dmtn:`085` :cite:`DMTN-085`, the QA Strategy Working Group (QAWG) made specific recommendations to improve the SQuaSH metrics dashboard.
 
 
-
-
 .. _qawg-rec-34:
 
 QAWG-REC-34
@@ -169,8 +167,67 @@ For the moment, Chronograf did not present any significant limitations for displ
 
 However, we might consider alternatives like Grafana_ for creating dashboards, which is straightforward to implement as Grafana includes a data source for InfluxDB. Either Chronograf or Grafana seems like a good option for replacing the original SQuaSH frontend saving several hours of development time for the project.
 
-Kapacitor, metric regression and notifications
-----------------------------------------------
+Kapacitor, metric regressions and notifications
+-----------------------------------------------
+
+Kapacitor_ is an open-source data processing framework that makes it easy to detect regressions on metric values and send notifications.
+
+Kapacitor uses a language called TICKscript_ to define tasks. Tasks can run on streaming data (e.g., as metric values are written to InfluxDB) or as batch jobs on data stored in InfluxDB.
+
+An exciting feature of Kapacitor is the record/replay capability to test the tasks before enabling them. This feature is useful to make sure the task work as expected, and the notification message is well-formed.
+
+A task typically defines the data to test through an InfluxQL_ query. The possible tests are:
+
+  - **Threshold** when the returned value is compared to a reference value.
+  - **Relative** when the returned value change by an absolute or relative amount compared with a previous value.
+  - **Deadman** send notification if data is missing for a certain amount of time.
+
+Chronograf presents an intuitive, however incomplete, interface to create these tasks (a.k.a alert rules). Kapacitor_, on the other hand, provides a complete `HTTP API <https://docs.influxdata.com/kapacitor/v1.5/working/api/>`_  to manage tasks.
+
+In DM-16293_, we investigate how to use the Kapacitor HTTP API to create tasks programmatically using the metric specifications from the SQuaSH API.
+
+Example of a streaming task to test ``ap_association.AssociationTime`` metric values. The task triggers a notification when the metric value is larger than the specified threshold. In this example, the notification is sent to the ``#dm-squash-alerts`` slack channel.
+
+.. code-block:: javascript
+
+  var name = 'Association time alert'
+  var db = 'squash-prod'
+  var rp = 'autogen'
+  var measurement = 'ap_association'
+  var groupBy = ['visit', 'ccdnum', 'ci_dataset']
+  var whereFilter = lambda: TRUE
+
+  var message = '{{.Name}} is {{.Level}} on build #{{ index .Tags "ci_id" }}: AssociationTime = {{ index .Fields "value" | printf "%0.2f s" }} for {{.Group}}'
+
+  var triggerType = 'threshold'
+  var crit = 5
+
+  var data = stream
+      |from()
+          .database(db)
+          .retentionPolicy(rp)
+          .measurement(measurement)
+          .groupBy(groupBy)
+          .where(whereFilter)
+      |eval(lambda: "ap_association.AssociationTime")
+          .as('value')
+  var trigger = data
+      |alert()
+          .crit(lambda: "value" > crit)
+          .message(message)
+          .stateChangesOnly()
+          .slack()
+          .channel('#dm-squash-alerts')
+
+Example of a notification message produced by this task:
+
+    *ap_association is CRITICAL on build #279:
+    AssociationTime = 5.42s for ccdnum=56, ci_dataset=CI-HiTS2015, visit=411371*
+
+
+|34| suggests a “subscription list” for each metric to be defined, and the key stakeholders automatically be added to it for all metrics deriving directly from high-level requirements.
+
+.. todo:: This could be achieved by sending notifications to specific slack channels for example, notification about regression on AP metrics are sent to ``#dm-alert-prod``, notifications about regression on DRP metrics to ``#dm-drp``, etc.
 
 
 Supporting multiple execution environments
@@ -193,14 +250,6 @@ Adding support to local execution environment allows DM developers to run verifi
 
 In DM-18505_, we add support for a local execution environment and this implementation fulfills |37|.
 
-
-
-
-
-
-
-
-
 .. Add content here.
 .. Do not include the document title (it's automatically added from metadata.yaml).
 
@@ -217,7 +266,8 @@ References
 .. _InfluxDB: https://www.influxdata.com/time-series-platform/
 .. _InluxQL function: https://docs.influxdata.com/influxdb/v1.7/query_language/functions/
 .. _Chronograf: https://www.influxdata.com/time-series-platform/chronograf/
-.. _Kapacitor: https://www.influxdata.com/time-series-platform/kapacitor/
+.. _Kapacitor: https://docs.influxdata.com/kapacitor/v1.5/
+.. _TICKScript: https://docs.influxdata.com/kapacitor/v1.5/tick/introduction/
 .. _MySQL database: https://sqr-009.lsst.io/#the-squash-context-database/
 .. _SQL-like query language: https://docs.influxdata.com/influxdb/v1.7/query_language/
 .. _Bokeh: https://bokeh.pydata.org/en/latest/
@@ -232,6 +282,7 @@ References
 .. _DM-18525: https://jira.lsstcorp.org/browse/DM-18525/
 .. _DM-16315: https://jira.lsstcorp.org/browse/DM-16315/
 .. _DM-18505: https://jira.lsstcorp.org/browse/DM-18505/
+.. _DM-16293: https://jira.lsstcorp.org/browse/DM-16293/
 
 .. |34| replace:: :ref:`QAWG-REC-34 <qawg-rec-34>`
 .. |35| replace:: :ref:`QAWG-REC-35 <qawg-rec-35>`
