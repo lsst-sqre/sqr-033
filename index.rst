@@ -231,6 +231,7 @@ References
 .. _DM-18343: https://jira.lsstcorp.org/browse/DM-18343/
 .. _DM-18525: https://jira.lsstcorp.org/browse/DM-18525/
 .. _DM-16315: https://jira.lsstcorp.org/browse/DM-16315/
+.. _DM-18505: https://jira.lsstcorp.org/browse/DM-18505/
 
 .. |34| replace:: :ref:`QAWG-REC-34 <qawg-rec-34>`
 .. |35| replace:: :ref:`QAWG-REC-35 <qawg-rec-35>`
