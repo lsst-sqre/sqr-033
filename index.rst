@@ -60,6 +60,9 @@ Summary of the QAWG recommendations to SQuaSH
 
 Recently, in :dmtn:`085` :cite:`DMTN-085`, the QA Strategy Working Group (QAWG) made specific recommendations to improve the SQuaSH metrics dashboard.
 
+
+
+
 .. _qawg-rec-34:
 
 QAWG-REC-34
@@ -101,11 +104,11 @@ InfluxDB, a time-series database
 
 InfluxDB_ is designed to store time-series efficiently. The realization that metric values and metadata indexed by time is time-series data, makes a time-series database the natural choice for SQuaSH.
 
-:sqr:`009` :cite:`SQR-009` describes how we `map metric values and metadata to InfluxDB concepts <https://sqr-009.lsst.io/#storing-results-in-squash>`_ like measurements, fields, and tags. In particular, we store arbitrary metadata in the verification job as InfluxDB tags (e.g., ``pipeline``, ``dataset``, ``filter``, ``ccdnum``, and ``visit``) and then we can use these tags to filter and group metric values.
+:sqr:`009` :cite:`SQR-009` describes how we `map metric values and metadata to InfluxDB concepts <https://sqr-009.lsst.io/#storing-results-in-squash>`_ like measurements, fields, and tags. In particular, we store arbitrary metadata tags in the verification job and then we can use these tags to distinguish metric values measured on different versions of the codebase, configurations, datasets.
 
-..todo:: DM-16315_ Details on how we do the mapping are not relevant for the user and should be removed from the user documentation, what is important is the list of metadata used to annotate the verification jobs.
+..todo:: DM-16315_ Document the list of metadata tags used within SQuaSH.
 
-This implementation has been tested with Alert Production (AP) and Data Release Production (DRP) metrics and completely satisfies |38|.
+This implementation has been tested with Alert Production (AP) and Data Release Production (DRP) metrics. In particular following |38| metadata tags can be used to annotate the DataId in which metric values are computed (e.g., ``ccdnum``, ``visit``) and then we can filter or aggregate metric values across DataId's.
 
 Example of a query to retrieve metric values per ``ccdnum``:
 
