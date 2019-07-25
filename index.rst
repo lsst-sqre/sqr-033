@@ -104,11 +104,11 @@ InfluxDB_ is designed to store time-series efficiently. The realization that met
 
 :sqr:`009` :cite:`SQR-009` describes how we `map metric values and metadata to InfluxDB concepts <https://sqr-009.lsst.io/#storing-results-in-squash>`_ like measurements, fields, and tags. In particular, we store arbitrary metadata tags in the verification job and then we can use these tags to distinguish metric values measured on different versions of the codebase, configurations, datasets.
 
-..todo:: DM-16315_ Document the list of metadata tags used within SQuaSH.
+.. todo:: DM-16315_ Document the list of metadata tags used within SQuaSH.
 
-This implementation has been tested with Alert Production (AP) and Data Release Production (DRP) metrics. In particular following |38| metadata tags can be used to annotate the DataId in which metric values are computed (e.g., ``ccdnum``, ``visit``) and then we can filter or aggregate metric values across DataId's.
+This implementation has been tested with Alert Production (AP) and Data Release Production (DRP) metrics. In particular, following |38|, metadata tags can be used to annotate the DataId in which metric values are computed (e.g., ``ccdnum``, ``visit``) and then we can filter or aggregate metric values across DataId's.
 
-Example of a query to retrieve metric values per ``ccdnum``:
+Example of a InfluxQL_ query to retrieve metric values per ``ccdnum``:
 
 .. code-block:: SQL
 
@@ -117,7 +117,7 @@ Example of a query to retrieve metric values per ``ccdnum``:
   WHERE  ("ccdnum"='10' OR "ccdnum"='5' OR "ccdnum"='56')
   GROUP BY "ccdnum"
 
-Example of a query to aggregate metric values across multiple ``ccdnum``'s:
+Example of a InfluxQL_ query to aggregate metric values across multiple ``ccdnum``'s:
 
 .. code-block:: SQL
 
@@ -126,7 +126,7 @@ Example of a query to aggregate metric values across multiple ``ccdnum``'s:
   WHERE  ("ccdnum"='10' OR "ccdnum"='5' OR "ccdnum"='56')
   GROUP BY time(1d)
 
-The aggregation example uses the ``mean()`` `InfluxQL function`_  to aggregate the metric values for the ``ccdnum``'s in the ``WHERE`` clause, and does that in time intervals of ``1d``, which is the cadence we get metric values from CI. Note that the timestamp you use to write metric values to InfluxDB has implications for the aggregation. In DM-17767_, we use the CI pipeline run time as the InfluxDB timestamp. That ensures we write all metric values with the same timestamp in InfluxDB.
+The aggregation example uses the ``mean()`` InfluxQL_ function to aggregate the metric values for the ``ccdnum``'s in the ``WHERE`` clause, and does that in time intervals of ``1d``, which is the cadence we get metric values from CI. Note that the timestamp you use to write metric values to InfluxDB has implications for the aggregation. In DM-17767_, we use the CI pipeline run time as the InfluxDB timestamp. That ensures we write all metric values with the same timestamp in InfluxDB.
 
 DM-16775_ implements a notebook to exercise the mapping described in :sqr:`009` :cite:`SQR-009`. There's a pending ticket DM-19605_ to implement the mapping of metric name to InfluxDB fields that simplifies the InfluxQL queries.
 
@@ -138,16 +138,16 @@ To complete this work we need to implement DM-18060_ to recreate the SQuaSH prod
 
 In addition to InfluxDB, SQuaSH has a `MySQL database`_  that is now used more like a `context database` storing metric definitions and specifications in addition to job and execution and environment metadata.
 
-InfluxDB already provides an HTTP API and an `SQL-like query language`_  to access the data. The InfluxDB HTTP API can be used directly in the notebook aspect of the LSP for querying Science Pipeline metrics. We are also considering other data access mechanisms like the Butler and the DAX APIs.
+InfluxDB also provides an HTTP API. The InfluxDB HTTP API can be used directly in the notebook aspect of the LSP for querying metric data. We are also considering other data access mechanisms like the Butler and the DAX APIs.
 
 .. note::
   Currently, we write metric values and metadata in both the MySQL and InfluxDB database instances. We can either drop the ``measurements`` table in the `MySQL database`_ or decide to use this database to expose the results through TAP.
 
 .. todo:: Design of metric data access from the LSP.
 
-From the recommendation that we should not implement drill-down capabilities in SQuaSH, we can safely drop the support for data blobs from SQuaSH.
+From the recommendation that we should not implement drill-down capabilities in SQuaSH, can we drop the support for data blobs in SQuaSH? (we still could use that to store artifacts produced by the verification packages).
 
-.. todo:: Create ticket to drop the support for data blobs in SQuaSH.
+.. todo:: If yes create ticket to drop the support for data blobs in SQuaSH.
 
 
 Chrognograf, a replacement for the SQuaSH frontend
@@ -161,9 +161,9 @@ Customizations in the Chronograf interface for SQuaSH include the support to mar
 
 .. todo:: Deploy a separate InfluxDB instance for each SQuaSH instance (dev, test, prod).
 
-For the moment, Chronograf did not present any significant limitations for displaying metrics.
+For the moment, Chronograf did not present any significant limitations for displaying metrics. However we still need to implement DM-18594_ to display specification thresholds in Chronograf.
 
-.. todo:: Display of specification thresholds in Chronograf (DM-18594)
+.. todo:: Display of specification thresholds in Chronograf
 
 However, we might consider alternatives like Grafana_ for creating dashboards, which is straightforward to implement as Grafana includes a data source for InfluxDB. Either Chronograf or Grafana seems like a good option for replacing the original SQuaSH frontend saving several hours of development time for the project.
 
@@ -263,13 +263,13 @@ References
 
 
 .. _InfluxData: https://www.influxdata.com/
-.. _InfluxDB: https://www.influxdata.com/time-series-platform/
-.. _InluxQL function: https://docs.influxdata.com/influxdb/v1.7/query_language/functions/
-.. _Chronograf: https://www.influxdata.com/time-series-platform/chronograf/
+.. _InfluxDB: https://docs.influxdata.com/influxdb/v1.7/
+.. _InfluxQL: https://docs.influxdata.com/influxdb/v1.7/query_language/
+.. _Grafana: https://grafana.com/docs/
+.. _Chronograf: https://docs.influxdata.com/chronograf/v1.7/
 .. _Kapacitor: https://docs.influxdata.com/kapacitor/v1.5/
 .. _TICKScript: https://docs.influxdata.com/kapacitor/v1.5/tick/introduction/
 .. _MySQL database: https://sqr-009.lsst.io/#the-squash-context-database/
-.. _SQL-like query language: https://docs.influxdata.com/influxdb/v1.7/query_language/
 .. _Bokeh: https://bokeh.pydata.org/en/latest/
 
 .. _DM-16223: https://jira.lsstcorp.org/browse/DM-16223/
