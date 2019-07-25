@@ -103,6 +103,8 @@ InfluxDB_ is designed to store time-series efficiently. The realization that met
 
 :sqr:`009` :cite:`SQR-009` describes how we `map metric values and metadata to InfluxDB concepts <https://sqr-009.lsst.io/#storing-results-in-squash>`_ like measurements, fields, and tags. In particular, we store arbitrary metadata in the verification job as InfluxDB tags (e.g., ``pipeline``, ``dataset``, ``filter``, ``ccdnum``, and ``visit``) and then we can use these tags to filter and group metric values.
 
+..todo:: DM-16315_ Details on how we do the mapping are not relevant for the user and should be removed from the user documentation, what is important is the list of metadata used to annotate the verification jobs.
+
 This implementation has been tested with Alert Production (AP) and Data Release Production (DRP) metrics and completely satisfies |38|.
 
 Example of a query to retrieve metric values per ``ccdnum``:
@@ -160,9 +162,39 @@ Customizations in the Chronograf interface for SQuaSH include the support to mar
 
 For the moment, Chronograf did not present any significant limitations for displaying metrics.
 
-.. todo:: Display of specification thresholds in Chronograf.
+.. todo:: Display of specification thresholds in Chronograf (DM-18594)
 
-However, we might consider alternatives like Grafana_ for creating dashboards, which is straightforward to implement because Grafana includes a data source for InfluxDB.
+However, we might consider alternatives like Grafana_ for creating dashboards, which is straightforward to implement as Grafana includes a data source for InfluxDB. Either Chronograf or Grafana seems like a good option for replacing the original SQuaSH frontend saving several hours of development time for the project.
+
+Kapacitor, metric regression and notifications
+----------------------------------------------
+
+
+Supporting multiple execution environments
+==========================================
+
+To be generally useful for the verification activities, SQuaSH must support multiple execution environments.
+
+The following project environments are currently supported:
+
+* Jenkins CI
+* LDF
+
+SQuaSH captures environment variables from these environments and use them as metadata associated with the metric values.
+
+.. todo:: Document the required environment variables in each situation and the corresponding metadata tags used by SQuaSH.
+
+SQuaSH has the concept of runs. A run may contain results from several verification jobs executed on a given environment. For example a ``GET`` request to ``/jenkins/<run_id>`` or to ``/lfd/<run_id>`` will retrieve all the verification jobs in that run.
+
+Adding support to local execution environment allows DM developers to run verification jobs in the notebook aspect of the LSP or from their laptop and submit the results to SQuaSH. Because the local execution environment is not a controlled environment like the Jenkins CI or the LDF, we can not capture information like code version.
+
+In DM-18505_, we add support for a local execution environment and this implementation fulfills |37|.
+
+
+
+
+
+
 
 
 
@@ -195,6 +227,7 @@ References
 .. _DM-16942: https://jira.lsstcorp.org/browse/DM-16942/
 .. _DM-18343: https://jira.lsstcorp.org/browse/DM-18343/
 .. _DM-18525: https://jira.lsstcorp.org/browse/DM-18525/
+.. _DM-16315: https://jira.lsstcorp.org/browse/DM-16315/
 
 .. |34| replace:: :ref:`QAWG-REC-34 <qawg-rec-34>`
 .. |35| replace:: :ref:`QAWG-REC-35 <qawg-rec-35>`
