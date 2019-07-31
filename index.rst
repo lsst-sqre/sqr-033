@@ -50,10 +50,6 @@
 
    Recently, in DMTN-085, the QA Strategy Working Group (QAWG) made specific recommendations to improve the SQuaSH metrics dashboard. This technote presents an overview of the current implementation and a plan to implement what is missing.
 
-Introduction
-============
-
-.. qawg-rec::
 
 Summary of the QAWG recommendations to SQuaSH
 =============================================
@@ -69,7 +65,7 @@ QAWG-REC-34
 .. _qawg-rec-35:
 
 QAWG-REC-35
-    | Provide a single, reliable source of documentation describing the SQuaSH system and a vision for its use in DM-wide metric tracking
+    | Provide a single, reliable source of documentation describing the SQuaSH system and a vision for its use in DM-wide metric tracking.
 
 .. _qawg-rec-36:
 
@@ -98,7 +94,7 @@ Adopting the InfluxData stack
 In DM-16223_, we investigate open source solutions that could be adopted to achieve the functionalities required in SQuaSH. Among them, the InfluxData_ stack presents the most exciting monitoring capabilities. This section describes the status of adopting the InfluxData stack in SQuaSH, in particular, InfluxDB_, Chronograf_, and Kapacitor_ components. We describe what has changed in SQuaSH so far, and propose a roadmap to implement what is pending.
 
 
-.. influxdb::
+.. _influx-db:
 
 InfluxDB, a time-series database
 --------------------------------
@@ -252,7 +248,7 @@ In DM-18505_, we add support for a local execution environment.  Adding support 
 
 .. note::
 
-  Dispatching results to SQuaSH requires auth access to the SQuaSH API. Currently, the only mechanism to register new users is interacting to the SQuaSH API. That can be implemented in the ``squash`` client as well (see also :ref:`metric-data-access`).
+  Dispatching results to SQuaSH requires auth access to the SQuaSH API. Currently, the only mechanism to register new users is interacting to the SQuaSH API. That can be simplified using the GitHub OAuth2 provider in SQuaSH .
 
 .. note::
 
@@ -263,28 +259,43 @@ In DM-18505_, we add support for a local execution environment.  Adding support 
 Connecting SQuaSH to the drill-down environment
 ===============================================
 
-:dmtn:`085` :cite:`DMTN-085` describes drill-down workflows to debug processing problems and investigate the effects of new algorithms. It recommends the implementation of a "browser-based interactive dashboard that can run on any pipeline output repository (or comparison of two repositories) to quickly diagnose the quality of the data processing". This drill-down system is referred here merely as QA dashboard.
+:dmtn:`085` :cite:`DMTN-085` describes drill-down workflows to debug processing problems and investigate the effects of new algorithms. It recommends the implementation of a "browser-based interactive dashboard that can run on any pipeline output data repository (or comparison of two repositories) to quickly diagnose the quality of the data processing". This drill-down system is referred here merely as QA dashboard.
 
 |36| suggests that SQuaSH should be able to automatically spawn an instance of the QA dashboard pointing at the output data repository corresponding to a particular metric value.
 
-To connect SQuaSH and the QA dashboard in a meaningful way, they need to share a subset of metrics.  Those metrics must have the same definition, must be computed by the same code and configuration,  and from the same data. Finally, metric values must be tested against the same specifications so that both systems indicate the same regressions.
+.. note::
 
-In other words, to accomplish that we need to combine information from the Workflow System and the Verification framework. The Workflow System runs the Pipeline Tasks on a controlled environment and associate code version, configuration with a run ID. The Verification Framework defines metrics and specifications and persists the metric values in verification jobs in the output repository of the same run.
+  The QA dashboard is based on the PyViz_ and HoloViz_ ecosystem and is designed in such a way that it is easy to run the interactive visualization tools either as standalone dashboards or from a notebook.
 
-This way, the run ID links the SQuaSH and the QA dashboard. We also assume that the QA dashboard can introspect the path to the output data repository, code version, and configuration used from the run ID.
+To connect SQuaSH and the QA dashboard in a meaningful way, they need to share a subset of metrics.  Those metrics must have the same definition, must be computed by the same code, configuration, and run on the same data. Finally, metric values must be tested against the same specifications so that both systems indicate consistent metric regressions.
 
-SQuaSH primarily job is to discover run IDs that present metric regressions, and from those run IDs, the QA dashboard enables drill-down into specific metric values.
+In other words, to accomplish the above we need to combine information from the Workflow System and the Verification Framework. The Workflow System runs the Pipeline Tasks on a controlled environment and associates code version and configuration with a run ID. The Verification Framework defines metrics and specifications and persists the metric values in verification jobs in the output data repository of that run. The verification jobs are submitted to SQuaSH along with the run ID and are used by the QA dashboard when analyzing the output data repository.
+
+This way, the run ID links the SQuaSH and the QA dashboard. We also assume a service provided by the Workflow System in which the QA dashboard can introspect the path to the output data repository, code version, and configuration from the run ID.
+
+
+.. note::
+
+  Such a service is generaly useful. To mention another use case, we envision using the notebook-based report system :sqr:`023` :cite:`SQR-023` for generating periodic reports (e.g., :sqr:`026` :cite:`SQR-026`) where the run ID is a template variable.
+
+SQuaSH primarily job is to discover run IDs that present metric regressions, and from those run IDs, the QA dashboard enables the drill-down functionality into specific metric values.
 
 Given the assumptions above, to fulfill |36|, the minimum set of information that SQuaSH needs to store is:
 
-  * The Run ID provided by the Workflow System
-  * Name of the execution environment to distinguish runs executed on controlled execution environments (e.g., LDF) from runs performed on the user local environment
-  * Metric values associated with DataId's provided by the Verification Framework (see :ref:`influxdb`)
+  * Run ID;
+  * Name of the execution environment;
+  * DataId's associated with metric values.
 
+The Run ID uniquely identifies the output data repository, the code version and the configuration run for a given environment. The name of the environment is used to distinguish runs executed on controlled environments (e.g., LDF) from runs performed on user local environments. Finally, DataId's associated with metric values make it possible to spawn an instance of the QA dashboard on a particular DataId.
+
+From the point of view of SQuaSH, |36| is easy to implement, in fact for the Jenkins CI environment we already store the run ID, the name of the environment and DataIds as metadata tags associated with metric values (see :ref:`influx-db`).
+
+The InfluxDB HTTP API is the recommended API to query metric values in SQuaSH, and the SQuaSH REST API is the recommended API to query metrics definition and specifications. Currently this is done by interacting directly with the APIs using the Python Requests_ module. This situation can be improved by implementing a SQuaSH Python client as a more user friendly interface to retrieve metric data.
 
 
 SQuaSH documentation
 ====================
+
 
 .. Add content here.
 .. Do not include the document title (it's automatically added from metadata.yaml).
@@ -308,6 +319,8 @@ References
 .. _MySQL database: https://sqr-009.lsst.io/#the-squash-context-database/
 .. _Bokeh: https://bokeh.pydata.org/en/latest/
 .. _PyViz: https://pyviz.org/
+.. _HoloViz: https://holoviz.org/
+.. _Requests: https://2.python-requests.org/en/master/
 
 .. _DM-16223: https://jira.lsstcorp.org/browse/DM-16223/
 .. _DM-17767: https://jira.lsstcorp.org/browse/DM-17767/
