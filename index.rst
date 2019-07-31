@@ -296,6 +296,9 @@ The InfluxDB HTTP API is the recommended API to query metric values in SQuaSH, a
 SQuaSH documentation
 ====================
 
+|35| recommends a single, reliable source of documentation describing the SQuaSH system and a vision for its use in DM-wide metric tracking.
+
+We understand |35| requests SQuaSH documentation for DM developers. We plan to implement user documentation at https://squash.lsst.io. In addition, we need to complete the SQuaSH design documentation :sqr:`009` :cite:`SQR-009` and add deployment instructions to that as well.
 
 .. Add content here.
 .. Do not include the document title (it's automatically added from metadata.yaml).
