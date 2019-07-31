@@ -97,6 +97,9 @@ Adopting the InfluxData stack
 
 In DM-16223_, we investigate open source solutions that could be adopted to achieve the functionalities required in SQuaSH. Among them, the InfluxData_ stack presents the most exciting monitoring capabilities. This section describes the status of adopting the InfluxData stack in SQuaSH, in particular, InfluxDB_, Chronograf_, and Kapacitor_ components. We describe what has changed in SQuaSH so far, and propose a roadmap to implement what is pending.
 
+
+.. influxdb::
+
 InfluxDB, a time-series database
 --------------------------------
 
@@ -257,8 +260,28 @@ In DM-18505_, we add support for a local execution environment.  Adding support 
 
 .. _metric-data-access:
 
-Accessing metric data from the LSP
-==================================
+Connecting SQuaSH to the drill-down environment
+===============================================
+
+:dmtn:`085` :cite:`DMTN-085` describes drill-down workflows to debug processing problems and investigate the effects of new algorithms. It recommends the implementation of a "browser-based interactive dashboard that can run on any pipeline output repository (or comparison of two repositories) to quickly diagnose the quality of the data processing". This drill-down system is referred here merely as QA dashboard.
+
+|36| suggests that SQuaSH should be able to automatically spawn an instance of the QA dashboard pointing at the output data repository corresponding to a particular metric value.
+
+To connect SQuaSH and the QA dashboard in a meaningful way, they need to share a subset of metrics.  Those metrics must have the same definition, must be computed by the same code and configuration,  and from the same data. Finally, metric values must be tested against the same specifications so that both systems indicate the same regressions.
+
+In other words, to accomplish that we need to combine information from the Workflow System and the Verification framework. The Workflow System runs the Pipeline Tasks on a controlled environment and associate code version, configuration with a run ID. The Verification Framework defines metrics and specifications and persists the metric values in verification jobs in the output repository of the same run.
+
+This way, the run ID links the SQuaSH and the QA dashboard. We also assume that the QA dashboard can introspect the path to the output data repository, code version, and configuration used from the run ID.
+
+SQuaSH primarily job is to discover run IDs that present metric regressions, and from those run IDs, the QA dashboard enables drill-down into specific metric values.
+
+Given the assumptions above, to fulfill |36|, the minimum set of information that SQuaSH needs to store is:
+
+  * The Run ID provided by the Workflow System
+  * Name of the execution environment to distinguish runs executed on controlled execution environments (e.g., LDF) from runs performed on the user local environment
+  * Metric values associated with DataId's provided by the Verification Framework (see :ref:`influxdb`)
+
+
 
 SQuaSH documentation
 ====================
@@ -284,6 +307,7 @@ References
 .. _TICKScript: https://docs.influxdata.com/kapacitor/v1.5/tick/introduction/
 .. _MySQL database: https://sqr-009.lsst.io/#the-squash-context-database/
 .. _Bokeh: https://bokeh.pydata.org/en/latest/
+.. _PyViz: https://pyviz.org/
 
 .. _DM-16223: https://jira.lsstcorp.org/browse/DM-16223/
 .. _DM-17767: https://jira.lsstcorp.org/browse/DM-17767/
