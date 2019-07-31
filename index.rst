@@ -75,7 +75,7 @@ QAWG-REC-36
 .. _qawg-rec-37:
 
 QAWG-REC-37
-    | It must be possible to submit metrics to SQuaSH from arbitrary pipeline execution environment.
+    | It must be possible to submit metrics to SQuaSH from arbitrary pipeline execution environments.
 
 .. _qawg-rec-38:
 
@@ -83,9 +83,9 @@ QAWG-REC-38
     | SQuaSH should be able to store and display appropriate metric values per DataId.
 
 
-These recommendations help to define the scope and technical requirements for SQuaSH. In particular, |37| and |38| have implications on how metric values are stored and visualized, including metadata from the verification jobs and the execution environment. |34| requires an automated regression detection and a notification system.  |36| suggests a new mechanism to expose metrics stored in SQuaSH to the notebook aspect of the LSST Science Platform (LSP) for exploratory analysis. Finally, |35| requires better user documentation.
+These recommendations help to define the scope and technical requirements for SQuaSH. In particular, |37| and |38| have implications on how metric values are stored and visualized, including metadata from the verification jobs and the execution environment. |34| requires an automated regression detection and a notification system. |36| suggests a workflow that starts in SQuaSH to find a misbehaving metric and then spawns an instance of the drill-down environment with enough information to look into why that particular metric is an excursion. Finally, |35| requires better user documentation.
 
-Another general recommendation made by the QAWG is that the drill-down capability should be removed from SQuaSH and implemented in external dashboards or the notebook aspect of the LSP.
+Another general recommendation made by the QAWG is that the drill-down capability should be removed from SQuaSH and implemented in external dashboards or the notebook aspect of the LSST Science Platform (LSP).
 
 
 Adopting the InfluxData stack
@@ -107,7 +107,7 @@ InfluxDB_ is designed to store time-series efficiently. The realization that met
 
 This implementation has been tested with Alert Production (AP) and Data Release Production (DRP) metrics. Following |38|, we use "metadata tags" to annotate the DataId in which metric values are computed (e.g., ``ccdnum``, ``visit``) and then we can filter or aggregate metric values across DataId's.
 
-Example of a InfluxQL_ query to retrieve metric values per ``ccdnum``:
+Example of an InfluxQL_ query to retrieve metric values per ``ccdnum``:
 
 .. code-block:: SQL
 
@@ -116,7 +116,7 @@ Example of a InfluxQL_ query to retrieve metric values per ``ccdnum``:
   WHERE  ("ccdnum"='10' OR "ccdnum"='5' OR "ccdnum"='56')
   GROUP BY "ccdnum"
 
-Example of a InfluxQL_ query to aggregate metric values across multiple ``ccdnum``'s:
+Example of an InfluxQL_ query to aggregate metric values across multiple ``ccdnum``'s:
 
 .. code-block:: SQL
 
@@ -133,7 +133,7 @@ The aggregation example uses the ``mean()`` InfluxQL_ function to aggregate the 
 
 DM-16775_ implements a notebook that exercises the mapping described in :sqr:`009` :cite:`SQR-009`. There's a pending ticket (DM-19605_) to improve the mapping of metric names to InfluxDB fields, which greatly simplifies the InfluxQL queries.
 
-Despite of adopting InfluxDB, the SQuaSH API specification remains unchanged, and so the clients that use it. The main addition is the code that formats the data and writes to the corresponding InfluxDB instance.
+Despite the adoption of InfluxDB, the SQuaSH API specification remains unchanged, and so the clients that use it. The main addition is the code that formats the data and writes to the corresponding InfluxDB instance.
 
 To complete this work we need to implement DM-18060_ to recreate the SQuaSH production database using the mapping described in :sqr:`009` :cite:`SQR-009`, and re-ingest the verification existing jobs in the current SQuaSH database.
 
@@ -178,15 +178,15 @@ An exciting feature of Kapacitor is the `record/replay capability <https://docs.
 
 A task typically defines the data to test through an InfluxQL_ query. The possible tests are:
 
-  - **Threshold** when the returned value is compared to a reference value.
-  - **Relative** when the returned value change by an absolute or relative amount compared with a previous value.
-  - **Deadman** send notification if data is missing for a certain amount of time.
+  - **Threshold** -- when the returned value is compared to a reference value.
+  - **Relative** -- when the returned value change by an absolute or relative amount compared with a previous value.
+  - **Deadman** -- send notification if data is missing for a certain amount of time.
 
 Chronograf presents an intuitive, however incomplete, interface to create and manage tasks (a.k.a alert rules). Kapacitor itself, on the other hand, provides a complete `HTTP API <https://docs.influxdata.com/kapacitor/v1.5/working/api/>`_  to manage tasks.
 
 In DM-16293_, we investigate how to use the Kapacitor HTTP API to create tasks programmatically using the metric specifications from the SQuaSH API.
 
-Example of a streaming task to test ``ap_association.AssociationTime`` metric values. The task triggers a notification when the metric value is larger than the specified threshold. In this example, the notification is sent to the ``#dm-squash-alerts`` slack channel.
+Following is an example of a streaming task to test ``ap_association.AssociationTime`` metric values. The task triggers a notification when the metric value is larger than the specified threshold. In this example, the notification is sent to the ``#dm-squash-alerts`` slack channel.
 
 .. code-block:: javascript
 
@@ -244,7 +244,7 @@ SQuaSH captures environment variables from these environments and use them as me
 
 SQuaSH has the concept of runs. A run may contain results from several verification jobs executed on a given environment. For example a ``GET`` request to ``/jenkins/<run_id>`` or to ``/lfd/<run_id>`` will retrieve all the verification jobs in that run.
 
-In DM-18505_, we add support for a local execution environment.  Adding support to a local execution environment, allows DM developers to run verification jobs in the notebook aspect of the LSP or from their laptop and dispatch results to SQuaSH. This implementation fulfills |37|.
+In DM-18505_, we add support for a local execution environment. That allows DM developers to run verification jobs in the notebook aspect of the LSP or from their laptop and dispatch results to SQuaSH. We plan to implement one execution environment per user to have have in SQuaSH auto-incremental run IDs per user. The user name registered in SQuaSH is going to be added as metadata to the environment. This implementation fulfills |37|.
 
 .. note::
 
@@ -259,9 +259,7 @@ In DM-18505_, we add support for a local execution environment.  Adding support 
 Connecting SQuaSH to the drill-down environment
 ===============================================
 
-:dmtn:`085` :cite:`DMTN-085` describes drill-down workflows to debug processing problems and investigate the effects of new algorithms. It recommends the implementation of a "browser-based interactive dashboard that can run on any pipeline output data repository (or comparison of two repositories) to quickly diagnose the quality of the data processing". This drill-down system is referred here merely as QA dashboard.
-
-|36| suggests that SQuaSH should be able to automatically spawn an instance of the QA dashboard pointing at the output data repository corresponding to a particular metric value.
+:dmtn:`085` :cite:`DMTN-085` describes drill-down workflows to debug processing problems and investigate the effects of new algorithms. It recommends the implementation of a "browser-based interactive dashboard that can run on any pipeline output data repository (or comparison of two repositories) to quickly diagnose the quality of the data processing". Here, the drill-down system is referred to merely as QA dashboard.
 
 .. note::
 
@@ -273,12 +271,11 @@ In other words, to accomplish the above we need to combine information from the 
 
 This way, the run ID links the SQuaSH and the QA dashboard. We also assume a service provided by the Workflow System in which the QA dashboard can introspect the path to the output data repository, code version, and configuration from the run ID.
 
-
 .. note::
 
   Such a service is generaly useful. To mention another use case, we envision using the notebook-based report system :sqr:`023` :cite:`SQR-023` for generating periodic reports (e.g., :sqr:`026` :cite:`SQR-026`) where the run ID is a template variable.
 
-SQuaSH primarily job is to discover run IDs that present metric regressions, and from those run IDs, the QA dashboard enables the drill-down functionality into specific metric values.
+SQuaSH's primary job is then to discover run IDs that present misbehaving metrics. Given the run ID, the  QA dashboard can get the information needed from the Workflow System for further investigation.
 
 Given the assumptions above, to fulfill |36|, the minimum set of information that SQuaSH needs to store is:
 
